@@ -1,0 +1,45 @@
+[package]
+name = "esp-cli"
+version = "0.1.0"
+authors = ["edy555 <edy555@gmail.com>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "esp-cli"
+test = false
+bench = false
+
+[dependencies]
+embedded-cli = { path = "../../embedded-cli", features = ["macros"] }
+
+#esp-hal = { version="0.19.0", features=["embedded-io", "embedded-hal"] }
+esp-riscv-rt = "0.9.0"
+embedded-hal = "1.0.0"
+embedded-hal-nb = "1.0.0"
+embedded-io = "0.6.1"
+panic-halt = "0.2.0"
+ufmt = "0.2.0"
+
+[dependencies.esp-hal]
+git = "https://github.com/esp-rs/esp-hal"
+features = ["embedded-io", "embedded-hal"]
+
+[features]
+default = ["esp32c6"]
+esp32c3 = ["esp-hal/esp32c3"]
+esp32c6 = ["esp-hal/esp32c6"]
+esp32h2 = ["esp-hal/esp32h2"]
+esp32s3 = ["esp-hal/esp32s3"]
+
+[profile.dev]
+panic = "abort"
+lto = true
+opt-level = "s"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+debug = true
+lto = true
+opt-level = "s"
