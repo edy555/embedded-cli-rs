@@ -13,12 +13,9 @@
 use core::convert::Infallible;
 
 use esp_hal::{
-    clock::ClockControl,
     delay::Delay,
     gpio::{Io, Level, Output},
-    peripherals::Peripherals,
     prelude::*,
-    system::SystemControl,
     usb_serial_jtag::UsbSerialJtag, usb_serial_jtag::UsbSerialJtagTx,
     Blocking,
 };
@@ -190,11 +187,8 @@ fn main() -> ! {
 }
 
 fn try_run() -> Option<()> {
-    let peripherals = Peripherals::take();
-    let system = SystemControl::new(peripherals.SYSTEM);
-    let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
-
-    let delay = Delay::new(&clocks);
+    let peripherals = esp_hal::init(esp_hal::Config::default());
+    let delay = Delay::new();
 
     // Set GPIO0 as an output, and set its state high initially.
     let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
@@ -202,7 +196,7 @@ fn try_run() -> Option<()> {
     
     //let usb_serial = UsbSerialJtag::new(peripherals.USB_DEVICE, None);
     let usb_serial = UsbSerialJtag::new(peripherals.USB_DEVICE);
-    let (writer, mut rx) = usb_serial.split();
+    let (mut rx, tx) = usb_serial.split();
 
     led.set_low();
 
@@ -215,7 +209,7 @@ fn try_run() -> Option<()> {
         (COMMAND_BUFFER.as_mut(), HISTORY_BUFFER.as_mut())
     };
     let mut cli = CliBuilder::default()
-        .writer(writer)
+        .writer(tx)
         .command_buffer(command_buffer)
         .history_buffer(history_buffer)
         .build()
